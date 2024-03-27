@@ -653,6 +653,8 @@ static const char* NOINLINE get_lif_token_value(struct gui_wps *gwps,
     return NULL;
 }
 
+extern bool volume_changed;
+
 /* Return the tags value as text. buf should be used as temp storage if needed.
 
    intval is used with conditionals/enums: when this function is called,
@@ -896,8 +898,11 @@ const char *get_token_value(struct gui_wps *gwps,
              * "dB" manually. So we need to strip the unit to unbreak all those
              * existing themes.
              */
-            if(fmt_size >= 3 && !strcmp(&buf[fmt_size - 3], " dB"))
-                buf[fmt_size - 3] = 0;
+            /* MODIFIED: Disabled this so the theme doesn't have to append dB
+            /* anymore.
+             */
+            // if(fmt_size >= 3 && !strcmp(&buf[fmt_size - 3], " dB"))
+            //     buf[fmt_size - 3] = 0;
 
             if (intval)
             {
@@ -1343,7 +1348,15 @@ const char *get_token_value(struct gui_wps *gwps,
             if (global_status.last_volume_change &&
                 TIME_BEFORE(current_tick, global_status.last_volume_change +
                                           token->value.i))
+            {
+                // MODIFIED: Set flag.
+                volume_changed = true;
                 return "v";
+            }
+            else
+            {
+                volume_changed = false;
+            }
             return NULL;
         case SKIN_TOKEN_LASTTOUCH:
             {

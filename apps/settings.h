@@ -316,7 +316,6 @@ struct system_status
     int  viewer_icon_count;
     int last_volume_change; /* tick the last volume change happened. skins use this */
     int font_id[NB_SCREENS]; /* font id of the settings font for each screen */
-
 };
 
 struct user_settings

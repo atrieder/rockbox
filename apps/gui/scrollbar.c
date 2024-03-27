@@ -24,6 +24,9 @@
 #include "limits.h"
 #include "bmp.h"
 
+// MODIFIED: Added flag to check volume changes.
+bool volume_changed = false;
+
 /* calculates the start and size of the knob */
 static void scrollbar_helper(int min_shown, int max_shown, int items,
                              int inner_len, int *size, int *start)
@@ -155,7 +158,7 @@ void gui_scrollbar_draw(struct screen * screen, int x, int y,
 #endif
         /* clear corner pixels */
         // MODIFIED: Mimic iPod style by not rounding corners for vertical.
-        if (flags & HORIZONTAL) {
+        if ((flags & HORIZONTAL) && !volume_changed) {
             // Top left
             //  XX_
             //  X/
@@ -214,51 +217,51 @@ void gui_scrollbar_draw(struct screen * screen, int x, int y,
     }
 
     // MODIFIED: Mimic iPod style by not rounding corners for vertical.
-        if (flags & HORIZONTAL) {
-            // Top left
-            //  XX_
-            //  X/
-            //  |
-            screen->drawpixel(x,y);
-            screen->drawpixel(x+1,y);
-            screen->drawpixel(x,y+1);
+    // if (flags & HORIZONTAL) {
+    //     // Top left
+    //     //  XX_
+    //     //  X/
+    //     //  |
+    //     screen->drawpixel(x,y);
+    //     screen->drawpixel(x+1,y);
+    //     screen->drawpixel(x,y+1);
 
-            // Bottom right
-            //   |
-            //  /X
-            // -XX
-            screen->drawpixel(x+width-1,y+height-1);
-            screen->drawpixel(x+width-2,y+height-1);
-            screen->drawpixel(x+width-1,y+height-2);
+    //     // Bottom right
+    //     //   |
+    //     //  /X
+    //     // -XX
+    //     screen->drawpixel(x+width-1,y+height-1);
+    //     screen->drawpixel(x+width-2,y+height-1);
+    //     screen->drawpixel(x+width-1,y+height-2);
 
-            // Top right
-            // XX-
-            // X/
-            // |
-            screen->drawpixel(x+width-1,y);
-            screen->drawpixel(x+width-2,y);
-            screen->drawpixel(x+width-1,y+1);
+    //     // Top right
+    //     // XX-
+    //     // X/
+    //     // |
+    //     screen->drawpixel(x+width-1,y);
+    //     screen->drawpixel(x+width-2,y);
+    //     screen->drawpixel(x+width-1,y+1);
 
-            // Bottom left.
-            // |
-            // X\
-            // XX-
-            screen->drawpixel(x,y+height-1);
-            screen->drawpixel(x+1,y+height-1);
-            screen->drawpixel(x,y+height-2);
+    //     // Bottom left.
+    //     // |
+    //     // X\
+    //     // XX-
+    //     screen->drawpixel(x,y+height-1);
+    //     screen->drawpixel(x+1,y+height-1);
+    //     screen->drawpixel(x,y+height-2);
 
-            // Add missing border pixels.
-            screen->set_drawmode(DRMODE_SOLID);
-            screen->drawpixel(x+1,y+1);
-            screen->drawpixel(x+1,y+height-2);
-            screen->drawpixel(x+width-2,y+1);
-            screen->drawpixel(x+width-2,y+height-2);
-            screen->set_drawmode(DRMODE_SOLID | DRMODE_INVERSEVID);
+    //     // Add missing border pixels.
+    //     screen->set_drawmode(DRMODE_SOLID);
+    //     screen->drawpixel(x+1,y+1);
+    //     screen->drawpixel(x+1,y+height-2);
+    //     screen->drawpixel(x+width-2,y+1);
+    //     screen->drawpixel(x+width-2,y+height-2);
+    //     screen->set_drawmode(DRMODE_SOLID | DRMODE_INVERSEVID);
 
-            // screen->drawpixel(x + width - 2, y);
-            // screen->drawpixel(x, y + height - 2);
-            // screen->drawpixel(x + width - 2, y + height - 2);
-        }
+    //     // screen->drawpixel(x + width - 2, y);
+    //     // screen->drawpixel(x, y + height - 2);
+    //     // screen->drawpixel(x + width - 2, y + height - 2);
+    // }
 
     screen->set_drawmode(DRMODE_SOLID);
 
@@ -290,7 +293,72 @@ void gui_scrollbar_draw(struct screen * screen, int x, int y,
         screen->drawpixel(0, 0);
     }
 
-    screen->fillrect(inner_x, inner_y, inner_wd, inner_ht);
+    // MODIFIED: Use lighter shade for horizontal bars.
+    if (flags & HORIZONTAL)
+    {
+        screen->set_foreground(SCREEN_COLOR_TO_NATIVE(screen, LCD_LIGHTGRAY));
+        screen->set_drawmode(DRMODE_FG);
+        screen->fillrect(inner_x, inner_y, inner_wd, inner_ht);
+        screen->set_foreground(SCREEN_COLOR_TO_NATIVE(screen, LCD_BLACK));
+        screen->set_drawmode(DRMODE_SOLID);
+
+        // MODIFIED: Mimic iPod style by not rounding corners for vertical.
+    // if (flags & HORIZONTAL) {
+    if (!volume_changed) {
+        // if (global_status.last_volume_change &&
+        //         TIME_BEFORE(current_tick, global_status.last_volume_change +
+        //                                   1)) {
+        screen->set_drawmode(DRMODE_SOLID | DRMODE_INVERSEVID);
+        // Top left
+        //  XX_
+        //  X/
+        //  |
+        screen->drawpixel(x,y);
+        screen->drawpixel(x+1,y);
+        screen->drawpixel(x,y+1);
+
+        // Bottom right
+        //   |
+        //  /X
+        // -XX
+        screen->drawpixel(x+width-1,y+height-1);
+        screen->drawpixel(x+width-2,y+height-1);
+        screen->drawpixel(x+width-1,y+height-2);
+
+        // Top right
+        // XX-
+        // X/
+        // |
+        screen->drawpixel(x+width-1,y);
+        screen->drawpixel(x+width-2,y);
+        screen->drawpixel(x+width-1,y+1);
+
+        // Bottom left.
+        // |
+        // X\
+        // XX-
+        screen->drawpixel(x,y+height-1);
+        screen->drawpixel(x+1,y+height-1);
+        screen->drawpixel(x,y+height-2);
+
+        // Add missing border pixels.
+        screen->set_drawmode(DRMODE_SOLID);
+        screen->drawpixel(x+1,y+1);
+        screen->drawpixel(x+1,y+height-2);
+        screen->drawpixel(x+width-2,y+1);
+        screen->drawpixel(x+width-2,y+height-2);
+        screen->set_drawmode(DRMODE_SOLID | DRMODE_INVERSEVID);
+
+        // screen->drawpixel(x + width - 2, y);
+        // screen->drawpixel(x, y + height - 2);
+        // screen->drawpixel(x + width - 2, y + height - 2);
+    }
+    }
+    else
+    {
+        screen->fillrect(inner_x, inner_y, inner_wd, inner_ht);
+    }
+    
 
     // MODIFIED: Draw bottom border.
     //screen->fillrect(0, height-1,width,1);
