@@ -81,6 +81,10 @@ void gui_scrollbar_draw(struct screen * screen, int x, int y,
                         int min_shown, int max_shown,
                         unsigned flags)
 {
+    //MODIFIED: Shift bar up 2 pixels.
+    // y-=1;
+    // height-=2;
+
     int inner_x, inner_y, inner_wd, inner_ht, inner_len;
     int start, size;
 #ifdef HAVE_LCD_COLOR
@@ -102,10 +106,18 @@ void gui_scrollbar_draw(struct screen * screen, int x, int y,
     }
     else
     {
-        inner_x  = x + 1;
-        inner_y  = y + 1;
-        inner_wd = width  - 2;
-        inner_ht = height - 2;
+        // MODIFIED: Mimic iPod style with gap surrounding inner bar (only for vertical).
+        if (flags & HORIZONTAL) {
+            inner_x  = x + 1;
+            inner_y  = y + 1;
+            inner_wd = width  - 2;
+            inner_ht = height - 2;
+        } else {
+            inner_x = x + 2;
+            inner_y = y + 2;
+            inner_wd = width  - 4;
+            inner_ht = height - 4;
+        }
     }
     /* Boundary check to make sure that height is reasonable, otherwise nothing
      *  to do 
@@ -142,10 +154,52 @@ void gui_scrollbar_draw(struct screen * screen, int x, int y,
     {
 #endif
         /* clear corner pixels */
-        screen->drawpixel(x, y);
-        screen->drawpixel(x + width - 1, y);
-        screen->drawpixel(x, y + height - 1);
-        screen->drawpixel(x + width - 1, y + height - 1);
+        // MODIFIED: Mimic iPod style by not rounding corners for vertical.
+        if (flags & HORIZONTAL) {
+            // Top left
+            //  XX_
+            //  X/
+            //  |
+            screen->drawpixel(x,y);
+            screen->drawpixel(x+1,y);
+            screen->drawpixel(x,y+1);
+
+            // Bottom right
+            //   |
+            //  /X
+            // -XX
+            screen->drawpixel(x+width-1,y+height-1);
+            screen->drawpixel(x+width-2,y+height-1);
+            screen->drawpixel(x+width-1,y+height-2);
+
+            // Top right
+            // XX-
+            // X/
+            // |
+            screen->drawpixel(x+width-1,y);
+            screen->drawpixel(x+width-2,y);
+            screen->drawpixel(x+width-1,y+1);
+
+            // Bottom left.
+            // |
+            // X\
+            // XX-
+            screen->drawpixel(x,y+height-1);
+            screen->drawpixel(x+1,y+height-1);
+            screen->drawpixel(x,y+height-2);
+
+            // Add missing border pixels.
+            screen->set_drawmode(DRMODE_SOLID);
+            screen->drawpixel(x+1,y+1);
+            screen->drawpixel(x+1,y+height-2);
+            screen->drawpixel(x+width-2,y+1);
+            screen->drawpixel(x+width-2,y+height-2);
+            screen->set_drawmode(DRMODE_SOLID | DRMODE_INVERSEVID);
+
+            // screen->drawpixel(x + width - 2, y);
+            // screen->drawpixel(x, y + height - 2);
+            // screen->drawpixel(x + width - 2, y + height - 2);
+        }
 
 #ifdef HAVE_LCD_COLOR
         if (infill != INNER_BGFILL)
@@ -158,6 +212,53 @@ void gui_scrollbar_draw(struct screen * screen, int x, int y,
         /* clear pixels in progress bar */
         screen->fillrect(inner_x, inner_y, inner_wd, inner_ht);
     }
+
+    // MODIFIED: Mimic iPod style by not rounding corners for vertical.
+        if (flags & HORIZONTAL) {
+            // Top left
+            //  XX_
+            //  X/
+            //  |
+            screen->drawpixel(x,y);
+            screen->drawpixel(x+1,y);
+            screen->drawpixel(x,y+1);
+
+            // Bottom right
+            //   |
+            //  /X
+            // -XX
+            screen->drawpixel(x+width-1,y+height-1);
+            screen->drawpixel(x+width-2,y+height-1);
+            screen->drawpixel(x+width-1,y+height-2);
+
+            // Top right
+            // XX-
+            // X/
+            // |
+            screen->drawpixel(x+width-1,y);
+            screen->drawpixel(x+width-2,y);
+            screen->drawpixel(x+width-1,y+1);
+
+            // Bottom left.
+            // |
+            // X\
+            // XX-
+            screen->drawpixel(x,y+height-1);
+            screen->drawpixel(x+1,y+height-1);
+            screen->drawpixel(x,y+height-2);
+
+            // Add missing border pixels.
+            screen->set_drawmode(DRMODE_SOLID);
+            screen->drawpixel(x+1,y+1);
+            screen->drawpixel(x+1,y+height-2);
+            screen->drawpixel(x+width-2,y+1);
+            screen->drawpixel(x+width-2,y+height-2);
+            screen->set_drawmode(DRMODE_SOLID | DRMODE_INVERSEVID);
+
+            // screen->drawpixel(x + width - 2, y);
+            // screen->drawpixel(x, y + height - 2);
+            // screen->drawpixel(x + width - 2, y + height - 2);
+        }
 
     screen->set_drawmode(DRMODE_SOLID);
 
@@ -182,11 +283,17 @@ void gui_scrollbar_draw(struct screen * screen, int x, int y,
     }
     else
     {
+        // MODIFIED: Add empty gap on top and bottom of the inner area.
         inner_y += start;
         inner_ht = size;
+        // MODIFIED: Fix cleared pixel to left.
+        screen->drawpixel(0, 0);
     }
 
     screen->fillrect(inner_x, inner_y, inner_wd, inner_ht);
+
+    // MODIFIED: Draw bottom border.
+    //screen->fillrect(0, height-1,width,1);
 }
 
 void gui_bitmap_scrollbar_draw(struct screen * screen, struct bitmap *bm, int x, int y,

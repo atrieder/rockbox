@@ -124,13 +124,13 @@ static void _default_listdraw_fn(struct list_putlineinfo_t *list_info)
     }
     else if (show_cursor || have_icons)
     {
-        display->put_line(x, y, linedes, "$*s$"ICON_PADDING_S"I$*t", item_indent,
+        display->put_line(x, y, linedes, "$4s$*s$"ICON_PADDING_S"I$*t", item_indent,
                 show_cursor ? (is_selected ? Icon_Cursor:Icon_NOICON):icon,
                 item_offset, dsp_text);
     }
     else
     {
-        display->put_line(x, y, linedes, "$*s$*t", item_indent, item_offset, dsp_text);
+        display->put_line(x, y, linedes, "$4s$*s$*t$4s", item_indent, item_offset, dsp_text);
     }
 }
 
@@ -278,6 +278,9 @@ void list_draw(struct screen *display, struct gui_synclist *list)
              * due to pixelwise rendering */
             vp.height = linedes.height * nb_lines;
 #endif
+            // MODIFIED: Shift up.
+            //list_text_vp->y+=2;//
+            //list_text_vp->height-=2;//
             list_text_vp->width -= SCROLLBAR_WIDTH;
             if (scrollbar_in_right)
                 vp.x += list_text_vp->width;
@@ -296,6 +299,9 @@ void list_draw(struct screen *display, struct gui_synclist *list)
             int scrollbar_min = list->y_pos;
             int scrollbar_max = list->y_pos + list_text_vp->height;
 #endif
+            // MODIFIED: Increase height to allow scrollbar to render.
+            vp.height+=2;
+           
             gui_scrollbar_draw(display,
                     (scrollbar_in_left? 0: 1), 0, SCROLLBAR_WIDTH-1, vp.height,
                     scrollbar_items, scrollbar_min, scrollbar_max, VERTICAL);
@@ -428,7 +434,7 @@ void list_draw(struct screen *display, struct gui_synclist *list)
                     list->callback_get_item_icon(i, list->data) : Icon_NOICON;
 
 
-        list_info.y = line * linedes.height + draw_offset;
+        list_info.y = line * linedes.height + draw_offset + 2; // MODIFIED: Shift text items down.
         list_info.is_selected = is_selected;
         list_info.item_indent = line_indent;
         list_info.line = i;
@@ -438,6 +444,9 @@ void list_draw(struct screen *display, struct gui_synclist *list)
 
         callback_draw_item(&list_info);
     }
+     // MODIFIED: Draw top border line.
+    display->drawrect(0,0,list_text_vp->width,1);
+
     display->set_viewport(parent);
     display->update_viewport();
     display->set_viewport(last_vp);
