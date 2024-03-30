@@ -1268,12 +1268,18 @@ void iap_handlepkt(void)
 
     /* if we are waiting for a remote button to go out,
        delay the handling of the new packet */
-    if(iap_repeatbtn)
-    {
-        queue_post(&iap_queue, IAP_EV_MSG_RCVD, 0);
-        sleep(1);
-        return;
-    }
+    /* MODIFIED: Disabling this since it seems to cause the following behavior
+     * when using the 2003 iPod Remote:
+     * Single presses work as intended, but if any button is held down (such as
+     * to rewind, fast forward, or change volume), subsequent presses may also
+     * be handled as though they are being held/repeated.
+     */
+    // if(iap_repeatbtn)
+    // {
+    //     queue_post(&iap_queue, IAP_EV_MSG_RCVD, 0);
+    //     sleep(1);
+    //     return;
+    // }
 
     /* handle command by mode */
     length = get_u16(iap_rxstart);

@@ -60,18 +60,10 @@
 /* Add a button to the remote button bitfield. Also set iap_repeatbtn=1
  * to ensure a button press is at least delivered once.
  */
-/* MODIFIED: Set iap_repeatbtn to 0.
- * With the 2003 iPod Remote, having a non-zero value here causes the following
- * behavior:
- * If any button is held on the remote to trigger repeat press logic (i.e.,
- * holding to change the volume or rewind/fastforward in a track), subsequent
- * button presses on the remote may be processed as though they are being held
- * down.
- */
 #define REMOTE_BUTTON(x) do { \
         iap_remotebtn |= (x); \
         iap_timeoutbtn = 3; \
-        iap_repeatbtn = 0; \
+        iap_repeatbtn = 2; \
         } while(0)
 
 /* States of the extended command support */
